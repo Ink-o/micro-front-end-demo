@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- 直接使用原本的 systemJs 包 -->
+  主应用 - 基座 - 用来加载子应用的 webpack importMap
+
+  <div id="root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs/dist/system.js"></script>
+  <!-- 导入前置依赖 -->
+  <script type="systemjs-importmap">
+    {
+      "imports":{
+        "react-dom":"https://cdn.bootcdn.net/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js",
+        "react":"https://cdn.bootcdn.net/ajax/libs/react/18.2.0/umd/react.development.js"
+      }
+    }
+  </script>
+  <script>
+    // 直接使用 SystemJs 暴露出来的变量进行导入模块
+    System.import('./index.js')
+  </script>
+</body>
+</html>

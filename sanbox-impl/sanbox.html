@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- 沙箱，防止应用加载的时候，对window造成污染 -->
+  <script>
+    // 快照
+    // 先保留a应用的属性  失活的时候 把修改的属性存起来，激活的时候还原回来
+    // 快照 浪费内存，因为要给window拍照
+    // 缺点就是 浪费内存， **快照**， 存储修改的或者添加的属性，不要给window拍照
+    // class SnapshotSanbox {
+    //   constructor() {
+    //     this.modifyPropsMap = {} // 存储全局哪些数据被修改了
+    //   }
+    //   // 给 window 拍照
+    //   // 回显之前修改的属性
+    //   active() {
+    //     this.windowSnapShot = {}
+    //     // 给 window 拍照
+    //     Object.keys(window).forEach(prop => {
+    //       this.windowSnapShot[prop] = window[prop]
+    //     })
+    //     // 将之前修改的属性，给window重新赋值
+    //     Object.keys(this.modifyPropsMap).forEach(prop => {
+    //       window[prop] = this.modifyPropsMap[prop]
+    //     })
+    //   }
+    //   // window 设置回原本的样子
+    //   // 记录本次修改的属性
+    //   inactive() {
+    //     this.modifyPropsMap = {}
+    //     Object.keys(window).forEach(prop => {
+    //       // 如果原始属性与现在属性不同，则将属性进行复原
+    //       if (window[prop] !== this.windowSnapShot[prop]) {
+    //         // 记录修改属性
+    //         this.modifyPropsMap[prop] = window[prop]
+    //         // 复原
+    //         window[prop] = this.windowSnapShot[prop]
+    //       }
+    //     })
+    //   }
+    // }
+    // let sandbox = new SnapshotSanbox()
+    // sandbox.active()
+    // window.a = 100
+    // window.b = 200
+    // sandbox.inactive()
+    // console.log(window.a,window.b)
+    // sandbox.active()
+    // console.log(window.a,window.b)
+
+    // proxy 代理，使用 map 来保存修改的属性
+    // class LegacySandbox {
+    //   constructor() {
+    //     // 修改的内容，key：修改的key，value：修改前的原始值
+    //     this.modifyPropsMap = new Map()
+    //     // 新增的内容，key：新增的key，value：新增的值
+    //     this.addedPropsMap = new Map()
+    //     // 不管修改还是新增的。key：变更/新增的key，value：对应的值
+    //     this.currentPropsMap = new Map()
+
+    //     const fakeWindow = Object.create(null)
+    //     // 这里的 proxy 设置和取值操作的都是 window 上的属性
+    //     const proxy = new Proxy(fakeWindow, {
+    //       get: (target, key, receiver) => {
+    //         return Reflect.get(window, key, receiver)
+    //       },
+    //       set: (target, key, value, receiver) => {
+    //         if (!window.hasOwnProperty(key)) {
+    //           // 添加属性
+    //           this.addedPropsMap.set(key, value)
+    //         } else if (!this.modifyPropsMap.has(key)) {
+    //           // 保存修改前的值
+    //           this.modifyPropsMap.set(key, Reflect.get(target, key, receiver))
+    //         }
+    //         // 所有的修改操作都保留了一份最新的
+    //         this.currentPropsMap.set(key, value)
+    //         // 修改成最新的内容
+    //         Reflect.set(window, key, value)
+    //       }
+    //     })
+    //     this.proxy = proxy
+    //   }
+    //   setWindowProp(key, value) {
+    //     if (value === undefined) {
+    //       delete window[key]
+    //     } else {
+    //       window[key] = value
+    //     }
+    //   }
+    //   // 变更的key进行赋值到window上
+    //   active() {
+    //     this.currentPropsMap.forEach((value, key) => {
+    //       this.setWindowProp(key, value)
+    //     })
+    //   }
+    //   inactive() {
+    //     // 修改的值进行复原
+    //     this.modifyPropsMap.forEach((value, key) => {
+    //       this.setWindowProp(key, value)
+    //     })
+    //     // 对于新增的属性，失活时直接设置回undefined
+    //     this.addedPropsMap.forEach((value, key) => [
+    //       this.setWindowProp(key, undefined)
+    //     ])
+    //   }
+    // }
+    // let sanbox = new LegacySandbox()
+    // sanbox.proxy.a = 123
+    // console.log(window.a, sanbox.proxy.a);
+    // sanbox.inactive()
+    // console.log(window.a, sanbox.proxy.a);
+    // sanbox.active()
+    // console.log(window.a, sanbox.proxy.a);
+
+    // 多实例实现
+    class ProxySanbox {
+      constructor() {
+        this.running = false
+        const fakeWindow = Object.create(null)
+        this.proxy = new Proxy(fakeWindow, {
+          get: (target, key) => {
+            return key in target ? target[key] : window[key]
+          },
+          set: (target, key, val) => {
+            if (this.running) {
+              target[key] = val
+            }
+            return true
+          }
+        })
+      }
+      active() {
+        this.running = true
+      }
+      inactive() {
+        this.running = false
+      }
+    }
+    let sandbox1 = new ProxySanbox()
+    let sandbox2 = new ProxySanbox()
+    sandbox1.active();
+    sandbox2.active();
+    sandbox1.proxy.a = 100;
+    sandbox2.proxy.a = 100; // 不会影响window
+    console.log(sandbox1.proxy.a)
+    console.log(sandbox2.proxy.a)
+    sandbox1.inactive();
+    sandbox2.inactive();
+    sandbox1.proxy.a = 200;
+    sandbox2.proxy.a = 200;
+    console.log(sandbox1.proxy.a,window.a)
+    console.log(sandbox2.proxy.a)
+  </script>
+</body>
+</html>

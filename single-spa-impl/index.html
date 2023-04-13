@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- <script src="https://cdn.bootcdn.net/ajax/libs/single-spa/5.9.3/umd/single-spa.min.js"></script> -->
+  <script type="module" src="./index.js"></script>
+  <a onclick="go('#/a')">a应用</a>
+  <a onclick="go('#/b')">b应用</a>
+  <script>
+    function go(url) { // 用户调用pushState replaceState 此方法不会触发逻辑reroute
+        history.pushState({}, null, url)
+    }
+  </script>
+</body>
+</html>

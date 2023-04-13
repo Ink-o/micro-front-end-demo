@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .my-staic-class {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="static">
+  </div>
+  <script entry>
+    // 启动：http-server --port 30000 --cors
+    // cors 代表是可以跨域的意思
+    const app = document.getElementById('static')
+    function render() {
+      app.innerHTML = '<div class="my-staic-class">static1</div>'
+    }
+    if (!window.__POWERED_BY_QIANKUN__) {
+      render()
+    }
+
+    // 最终导出接入协议即可
+    window['m-static'] = {
+      bootstrap: async () => {
+        console.log('static bootstrap');
+      },
+      mount: async() => {
+        render()
+      },
+      unmount: async () => {
+        app.innerHTML = ''
+      }
+    }
+  </script>
+</body>
+</html>

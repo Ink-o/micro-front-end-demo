@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="outer"></div>
+  <script>
+    // 影子DOM video audio 标签
+    const template = `<div id="qiankun-xxx">
+      <div id="inner">bcd</div>    
+      <style>div{color:red}</style>
+    </div>`
+
+    // 创建一个新的 div 元素
+    const container = document.createElement('div')
+    container.innerHTML = template
+
+    // 获取 id 为 qiankun-xxx 的元素
+    const appElement = container.firstChild
+    // 获取 qiankun-xxx 里面的子元素
+    let oldContent = appElement.innerHTML
+    appElement.innerHTML = ''
+
+    // 在 appElement 中创建一个 shadowDOM
+    let shadow = appElement.attachShadow({mode: 'closed'})
+    // 改变 shadowDOM 里面的节点内容
+    shadow.innerHTML = oldContent
+
+    document.body.appendChild(appElement)
+  </script>
+</body>
+</html>
