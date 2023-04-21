@@ -49,7 +49,9 @@ export class ScopedCSS {
       const textNode = document.createTextNode(styleNode.textContent || '');
       this.swapNode.appendChild(textNode);
       const sheet = this.swapNode.sheet as any; // type is missing
+      // 获取样式的 CSSRules，并且转换成数组
       const rules = arrayify<CSSRule>(sheet?.cssRules ?? []);
+      // 对样式规则进行一些正则替换，统一添加前缀
       const css = this.rewrite(rules, prefix);
       // eslint-disable-next-line no-param-reassign
       styleNode.textContent = css;
@@ -68,6 +70,7 @@ export class ScopedCSS {
           return;
         }
 
+        // 当发现样式变化时候，都需要统一进行下处理
         if (mutation.type === 'childList') {
           const sheet = styleNode.sheet as any;
           const rules = arrayify<CSSRule>(sheet?.cssRules ?? []);
@@ -92,6 +95,7 @@ export class ScopedCSS {
 
     rules.forEach((rule) => {
       switch (rule.type) {
+        // 普通样式的枚举是 1
         case RuleType.STYLE:
           css += this.ruleStyle(rule as CSSStyleRule, prefix);
           break;
@@ -184,6 +188,14 @@ export class ScopedCSS {
 let processor: ScopedCSS;
 
 export const QiankunCSSRewriteAttr = 'data-qiankun';
+
+/**
+ * 处理 style 标签中的样式
+ * @param appWrapper 
+ * @param stylesheetElement 
+ * @param appName 
+ * @returns 
+ */
 export const process = (
   appWrapper: HTMLElement,
   stylesheetElement: HTMLStyleElement | HTMLLinkElement,

@@ -18,6 +18,7 @@ export class HTMLLoader implements IHTMLLoader {
 
   /**
    * run logic of load and format html
+   * 加载应用资源后执行 successCb 回调
    * @param successCb success callback
    * @param errorCb error callback, type: (err: Error, meetFetchErr: boolean) => void
    */
@@ -40,9 +41,16 @@ export class HTMLLoader implements IHTMLLoader {
     })
   }
 
-  // 将 head 替换成 <micro-app-head 
-  // 将 body 替换成 <micro-app-body
-  private formatHTML (htmlUrl: string, htmlStr: string, appName: string) {
+  /**
+   * html 资源经过 plugin 处理，
+   * 将 head 替换成 <micro-app-head ，
+   * 将 body 替换成 <micro-app-body
+   * @param htmlUrl 
+   * @param htmlStr 
+   * @param appName 
+   * @returns 
+   */
+  private formatHTML(htmlUrl: string, htmlStr: string, appName: string) {
     return this.processHtml(htmlUrl, htmlStr, appName, microApp.plugins)
       .replace(/<head[^>]*>[\s\S]*?<\/head>/i, (match) => {
         return match

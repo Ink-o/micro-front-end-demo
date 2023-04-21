@@ -142,6 +142,13 @@ export const isConstDestructAssignmentSupported = memoize(() => {
 
 export const qiankunHeadTagName = 'qiankun-head';
 
+/**
+ * 处理传递过来的模板，head标签替换成 qiankun-head
+ * 额外创建一个 div，里面包裹着处理的 模板
+ * @param name 
+ * @param sandboxOpts 
+ * @returns 
+ */
 export function getDefaultTplWrapper(name: string, sandboxOpts: FrameworkConfiguration['sandbox']) {
   return (tpl: string) => {
     let tplWithSimulatedHead: string;

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- 加载子应用的div -->
+  <div id="container"></div>
+  <!-- 
+    以前的js都是放到沙箱中（自己实现的）去跑，现在 wujie 使用 iframe 执行 js，iframe 中就是一个天然的沙箱
+    之前的 css 隔离使用 scopedCss，现在使用 WebComponent
+    渲染采用 webComponent（拉取 html 模板，生成自定义组件插入到指定的 dom 中）
+   -->
+   <script>
+    const strTmpWithCSS = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body>
+            <div id="inner">hello jw</div>
+            <style>
+                div{background:red;color:#fff}
+             </style>
+        </body>
+        </html>
+        `
+        const strScript = `
+            window.a = 100; // 此属性不会影响父应用
+            console.log(window.a); // 100
+            const ele = document.querySelector('#inner')
+            console.log(ele);
+        `
+    function createIframe() {
+      const iframe = document.createElement('iframe')
+      // 默认给个空连接
+      iframe.src = 'about:blank'
+      document.body.appendChild(iframe)
+      return iframe
+    }
+    function createSandbox() {
+      const sandBox = {
+        iframe: createIframe(),
+        shadowRoot: null
+      }
+      return sandBox
+    }
+    function injectTemplate(sandBox, template) {
+      const wrapper = document.createElement('div')
+      wrapper.innerHTML = template
+      // 在 shadowDOM 中插入html与css
+      sandBox.shadowRoot.appendChild(wrapper)
+    }
+    function runScriptInSanbox(sandBox, script) {
+      const iframeWindow = sandBox.iframe.contentWindow
+      const scriptElement = iframeWindow.document.createElement('script')
+      
+      // 获取 head 将 script 插入 html 与 css
+      const headElement = iframeWindow.document.querySelector('head')
+      
+      // 我们希望在脚本执行之前，有些方法用的是父应用的
+      // document.querySelector 应该用的不是 iframe 中的，而是使用 shadowRoot 去处理
+      // 添加弹框的时候，document.createElement().appendChild() 代理到全局 window 上去
+      
+      // iframe 中的路由管理，history.pushState 将一些常用方法进行同步到主应用（这里以 querySelector 为例，其实其他方法也需要执行）
+      Object.defineProperty(iframeWindow.Document.prototype, 'querySelector', {
+        get() {
+          // 加载的脚本内部调用了 querySelector
+          // document.querySelector('abc') => sanbox.shadowRoot['querySelector']
+          // 这个 shadowRoot 就是 shadowDOM 中的 querySelector
+          return new Proxy(sandBox.shadowRoot['querySelector'], {
+            apply(target, thisArgs, args) {
+              // 这里改变了 this 指向
+              return thisArgs.querySelector.apply(sandBox.shadowRoot, args)
+            }
+          })
+        }
+      })
+    
+      // 给内部 script 脚本内容赋值
+      scriptElement.textContent = script
+      headElement.appendChild(scriptElement)
+    }
+    function createCustomElement() {
+      class WujieApp extends HTMLElement {
+        connectedCallback() {
+          console.log(111);
+          // 创建沙箱
+          const sandBox = createSandbox()
+          console.log('sandBox: ', sandBox);
+          // 创建 shadowDOM
+          sandBox.shadowRoot = this.attachShadow({mode: 'open'})
+          // 将 html、css 放入到 shadowDOM
+          injectTemplate(sandBox, strTmpWithCSS)
+          // 将js放入沙箱执行
+          runScriptInSanbox(sandBox, strScript)
+        }
+      }
+      window.customElements.define('wujie-app',WujieApp);
+      container.appendChild(document.createElement('wujie-app'))
+    }
+    createCustomElement()
+   </script>
+</body>
+</html>

@@ -229,7 +229,7 @@ export default class Wujie {
       const iframeBody = rawDocumentQuerySelector.call(iframeWindow.document, "body") as HTMLElement;
       this.el = renderElementToContainer(createWujieWebComponent(this.id), el ?? iframeBody);
     }
-    // 将模板放入到shadowRoot
+    // 将模板放入到shadowRoot（之前的样式已经处理好了）
     await renderTemplateToShadowRoot(this.shadowRoot, iframeWindow, this.template);
     this.patchCssRules();
 
@@ -243,7 +243,7 @@ export default class Wujie {
    */
   public async start(getExternalScripts: () => ScriptResultList): Promise<void> {
     this.execFlag = true;
-    // 执行脚本
+    // 获取脚本资源
     const scriptResultList = await getExternalScripts();
     // 假如已经被销毁了
     if (!this.iframe) return;
@@ -281,6 +281,7 @@ export default class Wujie {
       this.execQueue.push(() =>
         scriptResult.contentPromise.then((content) =>
           this.fiber
+            // 将 js 插入到 iframe 中
             ? requestIdleCallback(() => insertScriptToIframe({ ...scriptResult, content }, iframeWindow))
             : insertScriptToIframe({ ...scriptResult, content }, iframeWindow)
         )
@@ -307,7 +308,7 @@ export default class Wujie {
     };
     this.execQueue.push(this.fiber ? () => requestIdleCallback(domContentLoadedTrigger) : domContentLoadedTrigger);
 
-    // 插入代码后
+    // 往 iframe 中插入js代码，此时才是 js 代码执行
     afterScriptResultList.forEach((afterScriptResult) => {
       this.execQueue.push(() =>
         this.fiber
@@ -516,6 +517,7 @@ export default class Wujie {
     }
     this.provide.location = this.proxyLocation;
 
+    // 对应用添加缓存
     addSandboxCacheWithWujie(this.id, this);
   }
 }

@@ -45,7 +45,11 @@ export function isFunction (target: unknown): boolean {
 // is Array
 export const isArray = Array.isArray
 
-// is PlainObject
+/**
+ * 判断是否为一个普通对象
+ * @param target 
+ * @returns 
+ */
 export function isPlainObject (target: unknown): boolean {
   return toString.call(target) === '[object Object]'
 }

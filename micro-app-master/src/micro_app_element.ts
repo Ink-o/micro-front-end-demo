@@ -26,7 +26,8 @@ import globalEnv from './libs/global_env'
  * define element
  * @param tagName element name
  */
-export function defineElement (tagName: string): void {
+export function defineElement(tagName: string): void {
+  // 直接定义一个 webComponent
   class MicroAppElement extends HTMLElement implements MicroAppElementType {
     static get observedAttributes (): string[] {
       return ['name', 'url']
@@ -60,6 +61,7 @@ export function defineElement (tagName: string): void {
     connectedCallback (): void {
       this.hasConnected = true
 
+      // 触发 create 生命周期钩子
       defer(() => dispatchLifecyclesEvent(
         this,
         this.appName,
@@ -140,6 +142,7 @@ export function defineElement (tagName: string): void {
         this.ssrUrl = ''
       }
 
+      // 如果 app 已经被缓存
       if (appInstanceMap.has(this.appName)) {
         const app = appInstanceMap.get(this.appName)!
         const existAppUrl = app.ssrUrl || app.url
@@ -157,6 +160,7 @@ export function defineElement (tagName: string): void {
             app.getAppState() === appStates.UNMOUNT
           )
         ) {
+          // 说明 mounted 之前的钩子已经执行过了
           this.handleAppMount(app)
         } else if (app.isPrefetch || app.getAppState() === appStates.UNMOUNT) {
           /**
@@ -168,7 +172,7 @@ export function defineElement (tagName: string): void {
           logError(`app name conflict, an app named ${this.appName} is running`, this.appName)
         }
       } else {
-        // 初始化创建应用
+        // 初始化创建应用，在拉取完资源后会执行 mount 
         this.handleCreateApp()
       }
     }
@@ -426,5 +430,6 @@ export function defineElement (tagName: string): void {
     }
   }
 
+  // 注册一个webComponent
   window.customElements.define(tagName, MicroAppElement)
 }

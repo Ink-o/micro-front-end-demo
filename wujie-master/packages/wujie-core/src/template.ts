@@ -152,6 +152,7 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
      */
     .replace(HTML_COMMENT_REGEX, "")
 
+    // 匹配 link 标签
     .replace(LINK_TAG_REGEX, (match) => {
       /*
        change the css link
@@ -172,7 +173,9 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
             return genIgnoreAssetReplaceSymbol(newHref);
           }
 
+          // 将 link 资源的标签给加入数组
           styles.push({ src: newHref });
+          // 将样式资源
           return genLinkReplaceSymbol(newHref);
         }
       }
@@ -186,15 +189,19 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
 
       return match;
     })
+    // 匹配 style 标签
     .replace(STYLE_TAG_REGEX, (match) => {
       if (STYLE_IGNORE_REGEX.test(match)) {
         return genIgnoreAssetReplaceSymbol("style file");
       } else {
+        // 获取 style 标签内部的样式
         const code = getInlineCode(match);
         styles.push({ src: "", content: code });
+        // 替换成注释
         return getInlineStyleReplaceSymbol(styles.length - 1);
       }
     })
+    // 匹配 script 标签
     .replace(ALL_SCRIPT_REGEX, (match, scriptTag) => {
       const scriptIgnore = scriptTag.match(SCRIPT_IGNORE_REGEX);
       const isModuleScript = !!scriptTag.match(SCRIPT_MODULE_REGEX);
@@ -210,7 +217,7 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
         return match;
       }
 
-      // if it is a external script
+      // if it is a external script（外部 script 标签）
       if (SCRIPT_TAG_REGEX.test(match) && scriptTag.match(SCRIPT_SRC_REGEX)) {
         /*
          collect scripts and replace the ref
@@ -242,6 +249,7 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
         if (matchedScriptSrc) {
           const isAsyncScript = !!scriptTag.match(SCRIPT_ASYNC_REGEX);
           const isDeferScript = !!scriptTag.match(DEFER_ASYNC_REGEX);
+          // 记录 scripts 信息
           scripts.push(
             isAsyncScript || isDeferScript
               ? {
@@ -261,6 +269,7 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
                   attrs: parseTagAttributes(match),
                 }
           );
+          // script 标签替换 注释
           return genScriptReplaceSymbol(
             matchedScriptSrc,
             (isAsyncScript && "async") || (isDeferScript && "defer") || ""
@@ -268,7 +277,7 @@ export default function processTpl(tpl: String, baseURI: String, postProcessTemp
         }
 
         return match;
-      } else {
+      } else { // 内部 script 标签
         if (scriptIgnore) {
           return genIgnoreAssetReplaceSymbol("js file");
         }

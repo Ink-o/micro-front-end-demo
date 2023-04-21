@@ -43,6 +43,16 @@ export function patchAtMounting(
   return patchersInSandbox[sandbox.type]?.map((patch) => patch());
 }
 
+/**
+ * 根据不同的沙箱类型，执行后并以数组的形式返回执行结果
+ * @param appName 
+ * @param elementGetter 
+ * @param sandbox 
+ * @param scopedCSS 
+ * @param excludeAssetFilter 
+ * @param speedySandBox 
+ * @returns 
+ */
 export function patchAtBootstrapping(
   appName: string,
   elementGetter: () => HTMLElement | ShadowRoot,

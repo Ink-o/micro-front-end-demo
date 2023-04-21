@@ -118,7 +118,7 @@ export function doPrefetchStrategy(
   } else {
     switch (prefetchStrategy) {
       case true:
-        // 等待第一个应用加载完毕后，加载其他应用
+        // 等待第一个应用加载完毕后，预加载其他应用
         prefetchAfterFirstMounted(apps, importEntryOpts);
         break;
 

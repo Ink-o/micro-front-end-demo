@@ -260,7 +260,7 @@ export async function startApp(startOptions: startOptions): Promise<Function | v
   const newSandbox = new WuJie({ name, url, attrs, degradeAttrs, fiber, degrade, plugins, lifecycles });
   newSandbox.lifecycles?.beforeLoad?.(newSandbox.iframe.contentWindow);
 
-  // 获取 html 模板
+  // 获取 html 模板，并把里面的html部分资源进行替换
   const { template, getExternalScripts, getExternalStyleSheets } = await importHTML({
     url,
     html,
@@ -328,8 +328,10 @@ export function preloadApp(preOptions: preOptions): void {
       const processedHtml = await processCssLoader(sandbox, template, getExternalStyleSheets);
       await sandbox.active({ url, props, prefix, alive, template: processedHtml, fetch, replace });
       if (exec) {
+        // 预执行
         await sandbox.start(getExternalScripts);
       } else {
+        // 获取 js 的资源，但是并没有执行
         await getExternalScripts();
       }
     };

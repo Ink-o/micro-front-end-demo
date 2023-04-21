@@ -53,6 +53,7 @@ function preFetchInSerial (prefetchApp: prefetchParam): Promise<void> {
         prefetchApp.name = formatAppName(prefetchApp.name)
         prefetchApp.url = formatAppURL(prefetchApp.url, prefetchApp.name)
         if (prefetchApp.name && prefetchApp.url && !appInstanceMap.has(prefetchApp.name)) {
+          // 创建应用时会对远程资源进行加载
           const app = new CreateApp({
             name: prefetchApp.name,
             url: prefetchApp.url,

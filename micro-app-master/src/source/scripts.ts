@@ -165,6 +165,7 @@ export function fetchScriptsFromHtml (
       if (globalScriptText) {
         info.code = globalScriptText
       } else if ((!info.defer && !info.async) || app.isPrefetch) {
+        // 将请求 js 资源推入到数组中
         fetchScriptPromise.push(fetchSource(url, app.name))
         fetchScriptPromiseInfo.push([url, info])
       }
@@ -172,6 +173,7 @@ export function fetchScriptsFromHtml (
   }
 
   if (fetchScriptPromise.length) {
+    // promiseAll，把请求资源全部执行完
     promiseStream<string>(fetchScriptPromise, (res: {data: string, index: number}) => {
       fetchScriptSuccess(
         fetchScriptPromiseInfo[res.index][0],

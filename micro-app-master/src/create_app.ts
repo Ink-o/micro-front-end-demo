@@ -94,6 +94,7 @@ export default class CreateApp implements AppInterface {
   // Load resources
   loadSourceCode (): void {
     this.state = appStates.LOADING_SOURCE_CODE
+    // 加载完应用资源后，执行 extractSourceDom 回调
     HTMLLoader.getInstance().run(this, extractSourceDom)
   }
 
@@ -155,6 +156,7 @@ export default class CreateApp implements AppInterface {
       return
     }
 
+    // 触发 beforeUnmount 事件
     dispatchLifecyclesEvent(
       this.container,
       this.name,

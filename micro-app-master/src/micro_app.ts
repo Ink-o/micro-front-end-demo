@@ -168,6 +168,7 @@ export class MicroApp extends EventCenterForBaseApp implements MicroAppConfigTyp
       isPlainObject(options.lifeCycles) && (this.lifeCycles = options.lifeCycles)
 
       // load app assets when browser is idle（在浏览器空闲时进行预加载app资源）
+      // 如果有设置预加载资源。此时对用于进行预加载
       options.preFetchApps && preFetch(options.preFetchApps)
 
       // load global assets when browser is idle（在浏览器空闲时进行预加载静态资源）
@@ -187,12 +188,13 @@ export class MicroApp extends EventCenterForBaseApp implements MicroAppConfigTyp
           }
         }
 
+        // 赋值 plugins 用来处理 html
         this.plugins = options.plugins
       }
     }
 
     // define customElement after init
-    // 定义初始化元素在初始化后，使用WebComponent来自定义标签
+    // ⭐️定义初始化元素在初始化后，使用WebComponent来自定义标签
     defineElement(this.tagName)
   }
 }

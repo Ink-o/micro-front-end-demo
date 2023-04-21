@@ -39,6 +39,7 @@ function flatChildren (
 
   for (const dom of children) {
     if (dom instanceof HTMLLinkElement) {
+      // 遇到需要排查的 url，直接替换掉
       if (dom.hasAttribute('exclude') || checkExcludeUrl(dom.getAttribute('href'), app.name)) {
         parent.replaceChild(document.createComment('link element with exclude attribute ignored by micro-app'), dom)
       } else if (!(dom.hasAttribute('ignore') || checkIgnoreUrl(dom.getAttribute('href'), app.name))) {
@@ -67,6 +68,7 @@ function flatChildren (
 
 /**
  * Extract link and script, bind style scope
+ * 加载完html 资源到这，提取链接和脚本，绑定样式范围
  * @param htmlStr html string
  * @param app app
  */
@@ -87,6 +89,8 @@ export function extractSourceDom(htmlStr: string, app: AppInterface) {
 
 
   // 加载 link 资源，内部还是用 fetch 来进行加载的
+  // 最终转化成 style 标签插入到 micro-head 里面
+  // 内部资源加载完毕后也会执行 app.onload
   if (app.source.links.size) {
     fetchLinksFromHtml(wrapElement, app, microAppHead)
   } else {

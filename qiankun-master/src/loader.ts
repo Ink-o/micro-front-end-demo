@@ -64,7 +64,14 @@ async function validateSingularMode<T extends ObjectType>(
 
 const supportShadowDOM = !!document.head.attachShadow || !!(document.head as any).createShadowRoot;
 
-// appContent 是加载资源的 html 
+/**
+ * 创建一个真实 div 元素，把模板内容放入进去
+ * @param appContent 模板内容
+ * @param strictStyleIsolation 严格css隔离
+ * @param scopedCSS 
+ * @param appInstanceId 
+ * @returns 
+ */
 function createElement(
   appContent: string,
   strictStyleIsolation: boolean,
@@ -74,8 +81,9 @@ function createElement(
   const containerElement = document.createElement('div');
   containerElement.innerHTML = appContent;
   // appContent always wrapped with a singular div
-  // 对于严格样式隔离，就是增加影子dom
+  // 获container的第一个元素，也就是模板元素
   const appElement = containerElement.firstChild as HTMLElement;
+  // 对于严格样式隔离，就是增加影子dom
   if (strictStyleIsolation) {
     if (!supportShadowDOM) {
       console.warn(
@@ -103,7 +111,7 @@ function createElement(
       appElement.setAttribute(css.QiankunCSSRewriteAttr, appInstanceId);
     }
 
-    // 拿到所有的样式元素，进行重写
+    // 拿到所有的style标签，进行重写
     const styleNodes = appElement.querySelectorAll('style') || [];
     forEach(styleNodes, (stylesheetElement: HTMLStyleElement) => {
       css.process(appElement!, stylesheetElement, appInstanceId);
@@ -268,7 +276,7 @@ export async function loadApp<T extends ObjectType>(
   } = configuration;
 
   // get the entry html content and script executor
-  // 获取 html 文件，并且拿到脚本的执行器
+  // 获取 html 文件，并且拿到脚本的执行器（这里可能是之前已经 preFetch 过的资源，在 importEntry 中存在）
   const { template, execScripts, assetPublicPath, getExternalScripts } = await importEntry(entry, importEntryOpts);
   // trigger external scripts loading to make sure all assets are ready before execScripts calling
   // 获取额外的脚本
@@ -311,6 +319,7 @@ export async function loadApp<T extends ObjectType>(
   // 确保每次应用加载前容器 dom 结构已经设置完毕
   render({ element: initialAppWrapperElement, loading: true, container: initialContainer }, 'loading');
 
+  // 获取微应用的 dom 元素
   const initialAppWrapperGetter = getAppWrapperGetter(
     appInstanceId,
     !!legacyRender,
@@ -366,7 +375,7 @@ export async function loadApp<T extends ObjectType>(
   });
   // 获取到应用导出的接入协议，可以使用了，获取在window上最后增加的属性，之后拿到对应的脚本执行后拿到协议
   const { bootstrap, mount, unmount, update } = getLifecyclesFromExports(
-    scriptExports,
+    scriptExports, // 直接传递了 script 脚本的执行结果
     appName,
     global,
     sandboxContainer?.instance?.latestSetProp,

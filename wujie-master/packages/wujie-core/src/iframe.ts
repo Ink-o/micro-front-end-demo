@@ -238,7 +238,7 @@ function patchWindowEffect(iframeWindow: Window): void {
       return false;
     });
   });
-  // onEvent set
+  // onEvent set（找出所有的事件名）
   const windowOnEvents = Object.getOwnPropertyNames(window)
     .filter((p) => /^on/.test(p))
     .filter((e) => !appWindowOnEvent.includes(e));

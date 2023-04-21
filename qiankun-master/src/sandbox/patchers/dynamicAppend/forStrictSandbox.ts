@@ -37,6 +37,11 @@ const mutationObserverPatchedMap = new WeakMap<
 >();
 const parentNodePatchedMap = new WeakMap<PropertyDescriptor, PropertyDescriptor>();
 
+/**
+ * 
+ * @param cfg 
+ * @returns 
+ */
 function patchDocument(cfg: { sandbox: SandBox; speedy: boolean }) {
   const { sandbox, speedy } = cfg;
 
@@ -74,6 +79,7 @@ function patchDocument(cfg: { sandbox: SandBox; speedy: boolean }) {
       },
     });
 
+    // 更改全局的 document
     sandbox.patchDocument(proxyDocument);
 
     // patch MutationObserver.prototype.observe to avoid type error
@@ -115,6 +121,7 @@ function patchDocument(cfg: { sandbox: SandBox; speedy: boolean }) {
       }
     }
 
+    // 返回的函数会清除对 document.createElement 的影响
     return () => {
       MutationObserver.prototype.observe = nativeMutationObserverObserveFn;
       mutationObserverPatchedMap.delete(nativeMutationObserverObserveFn);
@@ -177,7 +184,7 @@ export function patchStrictSandbox(
       appName,
       proxy,
       appWrapperGetter,
-      dynamicStyleSheetElements: [],
+      dynamicStyleSheetElements: [], // 数组存放 HTMLStyleElement
       strictGlobal: true,
       speedySandbox,
       excludeAssetFilter,
@@ -188,8 +195,9 @@ export function patchStrictSandbox(
   // all dynamic style sheets are stored in proxy container
   const { dynamicStyleSheetElements } = containerConfig;
 
+  // 执行后清除对 document 的副作用影响
   const unpatchDocument = patchDocument({ sandbox, speedy: speedySandbox });
-
+  // 代理 HTMLDocument 上的一些方法，执行回调后清除影响
   const unpatchDynamicAppendPrototypeFunctions = patchHTMLDynamicAppendPrototypeFunctions(
     (element) => elementAttachContainerConfigMap.has(element),
     (element) => elementAttachContainerConfigMap.get(element)!,
@@ -198,6 +206,7 @@ export function patchStrictSandbox(
   if (!mounting) calcAppCount(appName, 'increase', 'bootstrapping');
   if (mounting) calcAppCount(appName, 'increase', 'mounting');
 
+  // 将代理沙箱的副作用影响给清除
   return function free() {
     if (!mounting) calcAppCount(appName, 'decrease', 'bootstrapping');
     if (mounting) calcAppCount(appName, 'decrease', 'mounting');
@@ -212,8 +221,9 @@ export function patchStrictSandbox(
 
     // As now the sub app content all wrapped with a special id container,
     // the dynamic style sheet would be removed automatically while unmoutting
-
+    // 恢复到第一步执行完成时程序的状态
     return function rebuild() {
+      // 不是很理解：一是将前面生成的style标签添加到微应用上；二是将之前保存的cssRule插入到对应的style标签上
       rebuildCSSRules(dynamicStyleSheetElements, (stylesheetElement) => {
         const appWrapper = appWrapperGetter();
         if (!appWrapper.contains(stylesheetElement)) {

@@ -86,7 +86,8 @@ export function fetchLinksFromHtml (
 ): void {
   const linkEntries: Array<[string, sourceLinkInfo]> = Array.from(app.source.links.entries())
 
-  const fetchLinkPromise: Array<Promise<string>|string> = linkEntries.map(([url]) => {
+  const fetchLinkPromise: Array<Promise<string> | string> = linkEntries.map(([url]) => {
+    // 看下之前是否已经缓存过，没有的话进行拉取
     return globalLinks.has(url) ? globalLinks.get(url)! : fetchSource(url, app.name)
   })
 

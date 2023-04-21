@@ -1,0 +1,19 @@
+{
+	"name": "remote",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "emp dev"
+	},
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"react": "^18.0.2",
+		"react-dom": "^18.0.2"
+	},
+	"devDependencies": {
+		"@types/react": "^18.0.33",
+		"@types/react-dom": "^18.0.11"
+	}
+}

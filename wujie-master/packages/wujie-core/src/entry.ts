@@ -66,6 +66,7 @@ export async function processCssLoader(
     ignore,
     contentPromise: contentPromise.then((content) => composeCssLoader(content, src, curUrl)),
   }));
+  // 将 link 资源标签变成 内联 style 标签
   const embedHTML = await getEmbedHTML(template, processedCssList);
   return sandbox.replace ? sandbox.replace(embedHTML) : embedHTML;
 }
@@ -236,6 +237,7 @@ export default function importHTML(params: {
       return {
         template: template,
         assetPublicPath,
+        // 加载 js 资源
         getExternalScripts: () =>
           getExternalScripts(
             scripts
@@ -245,6 +247,7 @@ export default function importHTML(params: {
             loadError,
             fiber
           ),
+        // 加载外部样式
         getExternalStyleSheets: () =>
           getExternalStyleSheets(
             styles

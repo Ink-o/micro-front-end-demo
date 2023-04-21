@@ -160,6 +160,10 @@ const styledComponentCSSRulesMap = new WeakMap<HTMLStyleElement, CSSRuleList>();
 const dynamicScriptAttachedCommentMap = new WeakMap<HTMLScriptElement, Comment>();
 const dynamicLinkAttachedInlineStyleMap = new WeakMap<HTMLLinkElement, HTMLStyleElement>();
 
+/**
+ * 保存一个style标签对象和其中的内容之间的关系
+ * @param styleElements 
+ */
 export function recordStyledComponentsCSSRules(styleElements: HTMLStyleElement[]): void {
   styleElements.forEach((styleElement) => {
     /*
@@ -170,6 +174,7 @@ export function recordStyledComponentsCSSRules(styleElements: HTMLStyleElement[]
     if (styleElement instanceof HTMLStyleElement && isStyledComponentsLike(styleElement)) {
       if (styleElement.sheet) {
         // record the original css rules of the style element for restore
+        // 记录某个 style 标签元素对应的 cssRules 规则
         styledComponentCSSRulesMap.set(styleElement, (styleElement.sheet as CSSStyleSheet).cssRules);
       }
     }

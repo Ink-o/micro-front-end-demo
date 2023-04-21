@@ -6,7 +6,11 @@ import reportWebVitals from './reportWebVitals';
 import microapp from '@micro-zoe/micro-app'
 
 debugger
-microapp.start()
+microapp.start({
+  preFetchApps: [
+    { name: 'app2', url: 'http://localhost:8080' }
+  ],
+})
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
